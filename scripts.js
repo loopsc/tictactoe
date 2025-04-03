@@ -8,54 +8,124 @@ const Gameboard = (function () {
     for (let i = 0; i < rows; i++) {
         gameboard[i] = [];
         for (let j = 0; j < columns; j++) {
-            gameboard[i][j] = " ";
+            gameboard[i].push(Cell());
         }
     }
 
     const getBoard = () => gameboard;
 
-    const addSymbol = (placement, symbol) => {
-        const x = placement[0];
-        const y = placement[1];
-
-        if (gameboard[x][y] === " ") {
-            gameboard[x][y] = symbol;
-        }
+    const addToken = (coords, player) => {
+        let x = coords[0];
+        let y = coords[1];
+        if (
+            gameboard[x][y].getToken() === 1 ||
+            gameboard[x][y].getToken() === 2
+        )
+            return;
         else {
-            throw Error("This cell is already occupied")
+            gameboard[x][y].addToken(player);
         }
     };
-    return { getBoard, addSymbol };
+
+    const printBoard = () => {
+        const boardWithCellValues = gameboard.map((row) =>
+            row.map((cell) => cell.getToken())
+        );
+        console.log(boardWithCellValues);
+    };
+
+    return { getBoard, addToken, printBoard };
 })();
 
-const GameManager = (function (gameboard) {
-    // Get access to the gameboard. TESTING ONLY
-    const managerGetBoard = () => {
-        return gameboard.getBoard()
+function Cell() {
+    let value = 0;
+
+    const addToken = (player) => {
+        value = player;
     };
 
-    // const checkWin = () => {
-    //     return gameboard[1,1]
-    // }
+    const getToken = () => value;
 
-    return { managerGetBoard };
-})(Gameboard);
-
-function Player(name, symbol) {
-    return (player = {
-        name,
-        symbol,
-    });
+    return { addToken, getToken };
 }
 
-const playerOne = Player("Jeff", "X");
+const GameManager = (function () {
+    const winningCombinations = [
+        [
+            [0, 0],
+            [0, 1],
+            [0, 2],
+        ],
+        [
+            [1, 0],
+            [1, 1],
+            [1, 2],
+        ],
+        [
+            [2, 0],
+            [2, 1],
+            [2, 2],
+        ],
+        [
+            [0, 0],
+            [1, 0],
+            [2, 0],
+        ],
+        [
+            [0, 1],
+            [1, 1],
+            [2, 1],
+        ],
+        [
+            [0, 2],
+            [1, 2],
+            [2, 2],
+        ],
+        [
+            [0, 0],
+            [1, 1],
+            [2, 2],
+        ],
+        [
+            [0, 2],
+            [1, 1],
+            [2, 0],
+        ],
+    ];
 
+    // Create 2 player objects
+    const players = [
+        {
+            name: "Player one",
+            token: 1,
+        },
+        {
+            name: "Player two",
+            token: 2,
+        },
+    ];
 
-// console.log(Gameboard.getBoard());
-console.log(GameManager.managerGetBoard())
+    // Set the active player
+    let activePlayer = players[0];
 
-Gameboard.addSymbol([0,1], playerOne.symbol);
-Gameboard.addSymbol([1,1], playerOne.symbol);
-Gameboard.addSymbol([2,1], playerOne.symbol);
-// console.log(`GameManager.checkWin(): ${GameManager.checkWin()}`)
+    // Function to switch the active player
+    const switchPlayer = () => {
+        activePlayer = activePlayer === players[0] ? players[1] : players[0];
+    }
 
+    // Function to get the current active player
+    const getActivePlayer = () => activePlayer;
+
+    // Function to print a new round
+    const printNewRound = () => {
+        Gameboard.printBoard();
+        console.log(`${getActivePlayer().name}'s turn.`);
+    };
+
+    printNewRound();
+
+    return {
+        getActivePlayer,
+        printNewRound,
+    };
+})();
