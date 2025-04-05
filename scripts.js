@@ -23,8 +23,7 @@ const Gameboard = (function () {
             gameboard[x][y].getToken() === 2
         ) {
             return;
-        }
-        else {
+        } else {
             gameboard[x][y].assignCell(token);
         }
     };
@@ -107,10 +106,13 @@ const GameManager = (function () {
     // Initial start of game
     const startGame = () => {
         Gameboard.printBoard();
-        playGame();
+        playRound();
     };
 
-    const playGame = () => {
+    // Plays a single round.
+    // Ends with switching player printing board announcing next player
+    // Then calls then calls itself
+    const playRound = () => {
         const input = prompt("Enter your move (row & column: e.g. 0 2");
         if (!input) {
             throw Error("Game aborted");
@@ -122,15 +124,15 @@ const GameManager = (function () {
         // prettier-ignore
         if(isNaN(row) || row < 0 || row > 2 || isNaN(col) || col < 0 || col > 2){
             console.log("Invalid input. Enter row and column between 0 and 2")
-            return playGame()
+            return playRound()
         }
 
         // Play a round
-        Gameboard.addToken([row,col], getActivePlayer().token);
+        Gameboard.addToken([row, col], getActivePlayer().token);
 
         // Check for a win: use the function
         if (checkWin()) {
-            Gameboard.printBoard()
+            Gameboard.printBoard();
             console.log(`${getActivePlayer().name} has won`);
             return;
         }
@@ -141,11 +143,11 @@ const GameManager = (function () {
             return;
         }
 
-        // Switch player and continue
+        // Switch player and continue playing
         switchPlayer();
         Gameboard.printBoard();
         console.log(`${getActivePlayer().name}'s turn`);
-        playGame();
+        playRound();
     };
 
     return {
