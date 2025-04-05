@@ -14,16 +14,18 @@ const Gameboard = (function () {
 
     const getBoard = () => gameboard;
 
-    const addToken = (coords, player) => {
+    const addToken = (coords, token) => {
         let x = coords[0];
         let y = coords[1];
+        // Check if the cell is occupied already
         if (
             gameboard[x][y].getToken() === 1 ||
             gameboard[x][y].getToken() === 2
-        )
+        ) {
             return;
+        }
         else {
-            gameboard[x][y].addToken(player);
+            gameboard[x][y].assignCell(token);
         }
     };
 
@@ -40,57 +42,29 @@ const Gameboard = (function () {
 function Cell() {
     let value = 0;
 
-    const addToken = (player) => {
-        value = player;
+    const assignCell = (token) => {
+        value = token;
     };
 
     const getToken = () => value;
 
-    return { addToken, getToken };
+    return { assignCell, getToken };
 }
 
 const GameManager = (function () {
+    // Variable holds the 2d array
+    const board = Gameboard.getBoard();
+
+    // prettier-ignore
     const winningCombinations = [
-        [
-            [0, 0],
-            [0, 1],
-            [0, 2],
-        ],
-        [
-            [1, 0],
-            [1, 1],
-            [1, 2],
-        ],
-        [
-            [2, 0],
-            [2, 1],
-            [2, 2],
-        ],
-        [
-            [0, 0],
-            [1, 0],
-            [2, 0],
-        ],
-        [
-            [0, 1],
-            [1, 1],
-            [2, 1],
-        ],
-        [
-            [0, 2],
-            [1, 2],
-            [2, 2],
-        ],
-        [
-            [0, 0],
-            [1, 1],
-            [2, 2],
-        ],
-        [
-            [0, 2],
-            [1, 1],
-            [2, 0],
-        ],
+        [[0, 0], [0, 1], [0, 2]],
+        [[1, 0], [1, 1], [1, 2]],
+        [[2, 0], [2, 1], [2, 2]],
+        [[0, 0], [1, 0], [2, 0]],
+        [[0, 1], [1, 1], [2, 1]],
+        [[0, 2], [1, 2], [2, 2]],
+        [[0, 0], [1, 1], [2, 2]],
+        [[0, 2], [1, 1], [2, 0]],
     ];
 
     // Create 2 player objects
@@ -111,21 +85,73 @@ const GameManager = (function () {
     // Function to switch the active player
     const switchPlayer = () => {
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
-    }
+    };
 
     // Function to get the current active player
     const getActivePlayer = () => activePlayer;
 
-    // Function to print a new round
-    const printNewRound = () => {
-        Gameboard.printBoard();
-        console.log(`${getActivePlayer().name}'s turn.`);
+    // Return true if a player has a winning combination
+    const checkWin = () => {
+        const token = activePlayer.token;
+
+        return winningCombinations.some((combination) =>
+            combination.every(([x, y]) => board[x][y].getToken() === token)
+        );
     };
 
-    printNewRound();
+    // Return true if board is full, false otherwise
+    const checkBoardFull = () => {
+        return board.every((row) => row.every((cell) => cell.getToken() !== 0));
+    };
+
+    // Initial start of game
+    const startGame = () => {
+        Gameboard.printBoard();
+        playGame();
+    };
+
+    const playGame = () => {
+        const input = prompt("Enter your move (row & column: e.g. 0 2");
+        if (!input) {
+            throw Error("Game aborted");
+        }
+
+        let [row, col] = input.split(" ").map(Number);
+
+        // Validate Input
+        // prettier-ignore
+        if(isNaN(row) || row < 0 || row > 2 || isNaN(col) || col < 0 || col > 2){
+            console.log("Invalid input. Enter row and column between 0 and 2")
+            return playGame()
+        }
+
+        // Play a round
+        Gameboard.addToken([row,col], getActivePlayer().token);
+
+        // Check for a win: use the function
+        if (checkWin()) {
+            Gameboard.printBoard()
+            console.log(`${getActivePlayer().name} has won`);
+            return;
+        }
+
+        // Check for a draw
+        if (checkBoardFull()) {
+            console.log("It's a draw");
+            return;
+        }
+
+        // Switch player and continue
+        switchPlayer();
+        Gameboard.printBoard();
+        console.log(`${getActivePlayer().name}'s turn`);
+        playGame();
+    };
 
     return {
-        getActivePlayer,
-        printNewRound,
+        startGame,
     };
 })();
+
+//Start the game
+GameManager.startGame();
