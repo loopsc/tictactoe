@@ -14,6 +14,7 @@ const Gameboard = (function () {
 
     const getBoard = () => gameboard;
 
+    // Error checking may not be neede here...
     const addToken = (coords, token) => {
         let x = coords[0];
         let y = coords[1];
@@ -31,25 +32,25 @@ const Gameboard = (function () {
     // Returns a cell
     const getCellByIndex = (index) => {
         if (index < 0 || index > 8) {
-            return
+            return;
         }
 
-        const i = Math.floor(index / 3)
-        const j = index % 3
+        const i = Math.floor(index / 3);
+        const j = index % 3;
 
-        return gameboard[i][j]
-    }
+        return gameboard[i][j];
+    };
 
     const getRowColByIndex = (index) => {
         if (index < 0 || index > 8) {
-            return
+            return;
         }
 
-        const i = Math.floor(index / 3)
-        const j = index % 3
+        const i = Math.floor(index / 3);
+        const j = index % 3;
 
-        return [i,j]
-    }
+        return [i, j];
+    };
 
     return { getBoard, addToken, getCellByIndex, getRowColByIndex };
 })();
@@ -102,6 +103,9 @@ const GameManager = (function () {
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
     };
 
+    // Function to get the current active player
+    const getActivePlayer = () => activePlayer;
+
     // Return true if a player has a winning combination
     const checkWin = () => {
         const token = activePlayer.token;
@@ -134,27 +138,32 @@ const GameManager = (function () {
 
         // Switch player and continue playing
         switchPlayer();
-        updateBoard()
+        updateBoard();
         console.log(`${activePlayer.name}'s turn`);
     };
 
     return {
         playRound,
+        getActivePlayer,
     };
 })();
 
 const htmlBoard = document.querySelectorAll(".cell");
 
+// FIX BUG: CAN WASTE TURN BY CLICKING USED CELL
+
 function renderBoard() {
     htmlBoard.forEach((cell, index) => {
-
         cell.addEventListener("click", () => {
-            const [row, col] = Gameboard.getRowColByIndex(index)
-
-            GameManager.playRound(row,col)
-            // Used to place the final token after win or board full
-            updateBoard()
-        })
+            const [row, col] = Gameboard.getRowColByIndex(index);
+            if (Gameboard.getBoard()[row][col].getToken() === 0) {
+                GameManager.playRound(row, col);
+                updateBoard();
+            }
+            else {
+                console.log("Can't click occupied cell")
+            }
+        });
     });
 }
 
@@ -162,7 +171,7 @@ function renderBoard() {
 function updateBoard() {
     htmlBoard.forEach((cell, index) => {
         cell.textContent = Gameboard.getCellByIndex(index).getToken();
-    })
+    });
 }
 
-renderBoard()
+renderBoard();
