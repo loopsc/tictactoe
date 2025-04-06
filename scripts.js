@@ -28,14 +28,30 @@ const Gameboard = (function () {
         }
     };
 
-    const printBoard = () => {
-        const boardWithCellValues = gameboard.map((row) =>
-            row.map((cell) => cell.getToken())
-        );
-        console.log(boardWithCellValues);
-    };
+    // Returns a cell
+    const getCellByIndex = (index) => {
+        if (index < 0 || index > 8) {
+            return
+        }
 
-    return { getBoard, addToken, printBoard };
+        const i = Math.floor(index / 3)
+        const j = index % 3
+
+        return gameboard[i][j]
+    }
+
+    const getRowColByIndex = (index) => {
+        if (index < 0 || index > 8) {
+            return
+        }
+
+        const i = Math.floor(index / 3)
+        const j = index % 3
+
+        return [i,j]
+    }
+
+    return { getBoard, addToken, getCellByIndex, getRowColByIndex };
 })();
 
 function Cell() {
@@ -86,9 +102,6 @@ const GameManager = (function () {
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
     };
 
-    // Function to get the current active player
-    const getActivePlayer = () => activePlayer;
-
     // Return true if a player has a winning combination
     const checkWin = () => {
         const token = activePlayer.token;
@@ -103,37 +116,13 @@ const GameManager = (function () {
         return board.every((row) => row.every((cell) => cell.getToken() !== 0));
     };
 
-    // Initial start of game
-    const startGame = () => {
-        Gameboard.printBoard();
-        playRound();
-    };
+    const playRound = (row, col) => {
+        // Place a token
+        Gameboard.addToken([row, col], activePlayer.token);
 
-    // Plays a single round.
-    // Ends with switching player printing board announcing next player
-    // Then calls then calls itself
-    const playRound = () => {
-        const input = prompt("Enter your move (row & column: e.g. 0 2");
-        if (!input) {
-            throw Error("Game aborted");
-        }
-
-        let [row, col] = input.split(" ").map(Number);
-
-        // Validate Input
-        // prettier-ignore
-        if(isNaN(row) || row < 0 || row > 2 || isNaN(col) || col < 0 || col > 2){
-            console.log("Invalid input. Enter row and column between 0 and 2")
-            return playRound()
-        }
-
-        // Play a round
-        Gameboard.addToken([row, col], getActivePlayer().token);
-
-        // Check for a win: use the function
+        // Checks for a win
         if (checkWin()) {
-            Gameboard.printBoard();
-            console.log(`${getActivePlayer().name} has won`);
+            console.log(`${activePlayer.name} has won`);
             return;
         }
 
@@ -145,15 +134,35 @@ const GameManager = (function () {
 
         // Switch player and continue playing
         switchPlayer();
-        Gameboard.printBoard();
-        console.log(`${getActivePlayer().name}'s turn`);
-        playRound();
+        updateBoard()
+        console.log(`${activePlayer.name}'s turn`);
     };
 
     return {
-        startGame,
+        playRound,
     };
 })();
 
-//Start the game
-GameManager.startGame();
+const htmlBoard = document.querySelectorAll(".cell");
+
+function renderBoard() {
+    htmlBoard.forEach((cell, index) => {
+
+        cell.addEventListener("click", () => {
+            const [row, col] = Gameboard.getRowColByIndex(index)
+
+            GameManager.playRound(row,col)
+            // Used to place the final token after win or board full
+            updateBoard()
+        })
+    });
+}
+
+// Writes token to UI
+function updateBoard() {
+    htmlBoard.forEach((cell, index) => {
+        cell.textContent = Gameboard.getCellByIndex(index).getToken();
+    })
+}
+
+renderBoard()

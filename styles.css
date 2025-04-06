@@ -1,0 +1,57 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+html {
+    /* Change fontsize here for rem */
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+:root {
+    /* Variables */
+}
+
+
+.board-div {
+    display: grid;
+    grid-template-columns: repeat(3, 200px);
+    grid-template-rows: repeat(3, 200px);
+
+}
+
+.cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+}
+
+.cell:hover {
+    cursor: pointer;
+    background-color: red;
+}
+
+.cell.top {
+    border-top: 0;
+}
+
+.cell.left {
+    border-left:0
+}
+
+.cell.bottom {
+    border-bottom: 0;
+}
+
+.cell.right {
+    border-right: 0;
+}
+
