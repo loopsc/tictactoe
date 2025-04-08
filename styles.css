@@ -17,6 +17,7 @@ body {
 
 :root {
     /* Variables */
+    --light-green: rgba(172, 255, 47, 0.548)
 }
 
 
@@ -36,7 +37,7 @@ body {
 
 .cell:hover {
     cursor: pointer;
-    background-color: red;
+    background-color: var(--light-green);
 }
 
 .cell.top {

@@ -170,7 +170,12 @@ function renderBoard() {
 // Writes token to UI
 function updateBoard() {
     htmlBoard.forEach((cell, index) => {
-        cell.textContent = Gameboard.getCellByIndex(index).getToken();
+        if (Gameboard.getCellByIndex(index).getToken() == 1) {
+            cell.textContent = "X"
+        }
+        else if (Gameboard.getCellByIndex(index).getToken() == 2) {
+            cell.textContent = "O"
+        }
     });
 }
 
