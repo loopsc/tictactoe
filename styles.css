@@ -1,6 +1,7 @@
 * {
     padding: 0;
     margin: 0;
+    box-sizing: border-box;
 }
 
 html {
@@ -8,16 +9,22 @@ html {
 }
 
 body {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    background-color: var(--background);
+    font-family: 'Courier New', Courier, monospace;
 }
 
 :root {
     /* Variables */
-    --light-green: rgba(172, 255, 47, 0.548)
+    --soft-blue: #dceeff;
+    --background: #f5f0e8;
+    --soft-green: #cdf5e1;
+}
+
+.container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 
@@ -33,11 +40,13 @@ body {
     justify-content: center;
     align-items: center;
     border: 1px solid black;
+    font-size: 100px;
+    font-weight: 100;
 }
 
 .cell:hover {
     cursor: pointer;
-    background-color: var(--light-green);
+    background-color: var(--soft-blue);
 }
 
 .cell.top {
@@ -56,3 +65,56 @@ body {
     border-right: 0;
 }
 
+.dialog-game-mode,
+.dialog-result {
+    width: 30%;
+    height: 40%;
+    padding: 3rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background-color: var(--background);
+}
+
+.gamemode-div {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around; 
+}
+
+.gamemode-form,
+.result-form {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.form-button {
+    font-size: 1.5rem;
+    border: 1px solid black;
+    padding: 1rem;
+    transition: transform 0.3s ease;
+    border-radius: 5px;
+    background: none;
+}
+
+.form-button:hover {
+    background: var(--soft-blue);
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+.form-button.pve:hover {
+    background-color: var(--soft-green);
+}
+
+.header {
+    font-size: 3rem;
+}
+
+.result-dialog {
+    background-color: red;
+}

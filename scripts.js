@@ -52,7 +52,29 @@ const Gameboard = (function () {
         return [i, j];
     };
 
-    return { getBoard, addToken, getCellByIndex, getRowColByIndex };
+    const generateRandomCell = () => {
+        let randomIndex = Math.floor(Math.random() * 9);
+        let randomRowCol = getRowColByIndex(randomIndex)
+        let [row, col] = randomRowCol;
+
+        // If the cell is taken, reroll otherwise return
+        while (gameboard[row][col].getToken() !== 0) {
+            console.log("Cell was taken, reroll!!!");
+            randomRowCol = getRowColByIndex(Math.floor(Math.random() * 9));
+            [row,col] = randomRowCol;
+        }
+        console.log("Cell was not taken");
+        console.log('returning:',randomRowCol)
+        return randomRowCol;
+    };
+
+    return {
+        getBoard,
+        addToken,
+        getCellByIndex,
+        getRowColByIndex,
+        generateRandomCell,
+    };
 })();
 
 function Cell() {
@@ -70,6 +92,7 @@ function Cell() {
 const GameManager = (function () {
     // Variable holds the 2d array
     const board = Gameboard.getBoard();
+    let gameOver = false;
 
     // prettier-ignore
     const winningCombinations = [
@@ -106,6 +129,8 @@ const GameManager = (function () {
     // Function to get the current active player
     const getActivePlayer = () => activePlayer;
 
+    const getGameOver = () => gameOver;
+
     // Return true if a player has a winning combination
     const checkWin = () => {
         const token = activePlayer.token;
@@ -127,41 +152,92 @@ const GameManager = (function () {
         // Checks for a win
         if (checkWin()) {
             console.log(`${activePlayer.name} has won`);
+            gameOver = true;
             return;
         }
 
         // Check for a draw
         if (checkBoardFull()) {
             console.log("It's a draw");
+            gameOver = true;
             return;
         }
 
         // Switch player and continue playing
-        switchPlayer();
         updateBoard();
+        switchPlayer();
         console.log(`${activePlayer.name}'s turn`);
+    };
+
+    const playRoundComputer = (row, col) => {
+        // Place a token
+        Gameboard.addToken([row, col], activePlayer.token);
+
+        // Check for win
+        if (checkWin()) {
+            console.log(`${activePlayer.name} has won`);
+            gameOver = true;
+            return;
+        }
+
+        // Check for a draw
+        if (checkBoardFull()) {
+            console.log("It's a draw");
+            gameOver = true;
+            return;
+        }
+        //Update the board
+        updateBoard();
+
+        console.log('adding token')
+        // Computer places token at random location
+        Gameboard.addToken(Gameboard.generateRandomCell(), 2);
+        
+
+        // Update the board
+        updateBoard()
     };
 
     return {
         playRound,
         getActivePlayer,
+        getGameOver,
+        playRoundComputer,
     };
 })();
 
 const htmlBoard = document.querySelectorAll(".cell");
 
-// FIX BUG: CAN WASTE TURN BY CLICKING USED CELL
-
-function renderBoard() {
+function playGamePlayer() {
     htmlBoard.forEach((cell, index) => {
         cell.addEventListener("click", () => {
-            const [row, col] = Gameboard.getRowColByIndex(index);
-            if (Gameboard.getBoard()[row][col].getToken() === 0) {
-                GameManager.playRound(row, col);
-                updateBoard();
+            // If game is over prevent player from clicking more squares
+            if (!GameManager.getGameOver()) {
+                const [row, col] = Gameboard.getRowColByIndex(index);
+                if (Gameboard.getBoard()[row][col].getToken() === 0) {
+                    GameManager.playRound(row, col);
+                    updateBoard();
+                } else {
+                    console.log("Can't click occupied cell");
+                }
             }
-            else {
-                console.log("Can't click occupied cell")
+        });
+    });
+}
+
+function playGameComputer() {
+    htmlBoard.forEach((cell, index) => {
+        cell.addEventListener("click", () => {
+            // If game is over prevent player from clicking more squares
+            if (!GameManager.getGameOver()) {
+                const [row, col] = Gameboard.getRowColByIndex(index);
+                console.log("playing computer");
+                if (Gameboard.getBoard()[row][col].getToken() === 0) {
+                    GameManager.playRoundComputer(row, col);
+                    updateBoard();
+                } else {
+                    console.log("Can't click occupied cell");
+                }
             }
         });
     });
@@ -171,12 +247,30 @@ function renderBoard() {
 function updateBoard() {
     htmlBoard.forEach((cell, index) => {
         if (Gameboard.getCellByIndex(index).getToken() == 1) {
-            cell.textContent = "X"
-        }
-        else if (Gameboard.getCellByIndex(index).getToken() == 2) {
-            cell.textContent = "O"
+            cell.textContent = "X";
+        } else if (Gameboard.getCellByIndex(index).getToken() == 2) {
+            cell.textContent = "O";
         }
     });
 }
 
-renderBoard();
+const dialog = document.querySelector(".dialog-game-mode");
+const gameModeForm = document.querySelector(".gamemode-form");
+const pvp = document.querySelector(".pvp");
+const pve = document.querySelector(".pve");
+
+dialog.showModal()
+
+dialog.addEventListener("close", () => {
+    const gameMode = dialog.returnValue;
+
+    console.log('gamemode',gameMode)
+
+    if (gameMode == "player") {
+        playGamePlayer();
+    } else if (gameMode == "computer") {
+        playGameComputer();
+    }
+});
+
+// renderBoard();
