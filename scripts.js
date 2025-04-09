@@ -1,5 +1,10 @@
-// Factory wrapped in IIFE.
-// Gets executed immediately and only allows the creation of one instance - singleton pattern
+const resultDialog = document.querySelector(".dialog-result");
+const resultMessage = document.querySelector(".game-result");
+const playAgainButton = document.querySelector(".play-again");
+const closeButton = document.querySelector(".close");
+
+let activeGameMode = "";
+
 const Gameboard = (function () {
     const rows = 3;
     const columns = 3;
@@ -54,18 +59,30 @@ const Gameboard = (function () {
 
     const generateRandomCell = () => {
         let randomIndex = Math.floor(Math.random() * 9);
-        let randomRowCol = getRowColByIndex(randomIndex)
+        let randomRowCol = getRowColByIndex(randomIndex);
         let [row, col] = randomRowCol;
 
         // If the cell is taken, reroll otherwise return
         while (gameboard[row][col].getToken() !== 0) {
             console.log("Cell was taken, reroll!!!");
             randomRowCol = getRowColByIndex(Math.floor(Math.random() * 9));
-            [row,col] = randomRowCol;
+            [row, col] = randomRowCol;
         }
         console.log("Cell was not taken");
-        console.log('returning:',randomRowCol)
+        console.log("returning:", randomRowCol);
         return randomRowCol;
+    };
+
+    const resetBoard = () => {
+        let counter = 0
+        for (let i = 0; i < 9; i++) {
+            if (getCellByIndex(i).getToken() !== 0) {
+                getCellByIndex(i).assignCell(0);
+                counter++;
+            }
+        }
+        console.log("deleted elements", counter)
+        updateBoard();
     };
 
     return {
@@ -74,6 +91,7 @@ const Gameboard = (function () {
         getCellByIndex,
         getRowColByIndex,
         generateRandomCell,
+        resetBoard,
     };
 })();
 
@@ -131,6 +149,8 @@ const GameManager = (function () {
 
     const getGameOver = () => gameOver;
 
+    const resetGameOver = () => {gameOver = false};
+
     // Return true if a player has a winning combination
     const checkWin = () => {
         const token = activePlayer.token;
@@ -151,14 +171,16 @@ const GameManager = (function () {
 
         // Checks for a win
         if (checkWin()) {
-            console.log(`${activePlayer.name} has won`);
+            displayResults()
+            activeGameMode = ""
             gameOver = true;
             return;
         }
 
         // Check for a draw
         if (checkBoardFull()) {
-            console.log("It's a draw");
+            displayResults("draw")
+            activeGameMode = ""
             gameOver = true;
             return;
         }
@@ -175,27 +197,32 @@ const GameManager = (function () {
 
         // Check for win
         if (checkWin()) {
-            console.log(`${activePlayer.name} has won`);
+            displayResults()
+            activeGameMode = ""
             gameOver = true;
+            console.log("won against computer. returning")
+            console.log("activeGameMode", activeGameMode)
             return;
         }
 
         // Check for a draw
         if (checkBoardFull()) {
-            console.log("It's a draw");
+            displayResults("draw")
+            activeGameMode = ""
             gameOver = true;
+            console.log("draw against computer. returning")
+            console.log("activeGameMode", activeGameMode)
             return;
         }
         //Update the board
         updateBoard();
 
-        console.log('adding token')
+        console.log("adding token");
         // Computer places token at random location
         Gameboard.addToken(Gameboard.generateRandomCell(), 2);
-        
 
         // Update the board
-        updateBoard()
+        updateBoard();
     };
 
     return {
@@ -203,14 +230,19 @@ const GameManager = (function () {
         getActivePlayer,
         getGameOver,
         playRoundComputer,
+        resetGameOver,
     };
 })();
 
 const htmlBoard = document.querySelectorAll(".cell");
 
+
 function playGamePlayer() {
+    activeGameMode = "player"
+    console.log('playGamePlayer() called')
     htmlBoard.forEach((cell, index) => {
         cell.addEventListener("click", () => {
+            console.log("gameover?",GameManager.getGameOver())
             // If game is over prevent player from clicking more squares
             if (!GameManager.getGameOver()) {
                 const [row, col] = Gameboard.getRowColByIndex(index);
@@ -226,8 +258,10 @@ function playGamePlayer() {
 }
 
 function playGameComputer() {
+    activeGameMode = "computer"
+    console.log('playGameComputer() called')
     htmlBoard.forEach((cell, index) => {
-        cell.addEventListener("click", () => {
+        cell.addEventListener("click", function handleEvent(){
             // If game is over prevent player from clicking more squares
             if (!GameManager.getGameOver()) {
                 const [row, col] = Gameboard.getRowColByIndex(index);
@@ -239,8 +273,16 @@ function playGameComputer() {
                     console.log("Can't click occupied cell");
                 }
             }
+            if (activeGameMode != "computer") {
+                this.removeEventListener("click", handleEvent)
+                console.log("closed event listener computer")
+            }
         });
     });
+}
+
+function removeAllListeners() {
+    cell.removeEventListener("click", func)
 }
 
 // Writes token to UI
@@ -251,20 +293,23 @@ function updateBoard() {
         } else if (Gameboard.getCellByIndex(index).getToken() == 2) {
             cell.textContent = "O";
         }
+        else if (Gameboard.getCellByIndex(index).getToken() == 0) {
+            cell.textContent = ""
+        }
     });
 }
 
-const dialog = document.querySelector(".dialog-game-mode");
+const gameModeDialog = document.querySelector(".dialog-game-mode");
 const gameModeForm = document.querySelector(".gamemode-form");
 const pvp = document.querySelector(".pvp");
 const pve = document.querySelector(".pve");
 
-dialog.showModal()
+gameModeDialog.showModal();
 
-dialog.addEventListener("close", () => {
-    const gameMode = dialog.returnValue;
+gameModeDialog.addEventListener("close", () => {
+    const gameMode = gameModeDialog.returnValue;
 
-    console.log('gamemode',gameMode)
+    console.log("gamemode", gameMode);
 
     if (gameMode == "player") {
         playGamePlayer();
@@ -273,4 +318,32 @@ dialog.addEventListener("close", () => {
     }
 });
 
-// renderBoard();
+resultDialog.addEventListener("close", () => {
+    const gameOverAction = resultDialog.returnValue;
+
+    console.log("gameOverAction", gameOverAction);
+
+    if (gameOverAction == "play-again") {
+        Gameboard.resetBoard()
+        GameManager.resetGameOver()
+        gameModeDialog.showModal();
+    } else if (gameOverAction == "close") {
+        console.log("closed");
+        Gameboard.resetBoard()
+        GameManager.resetGameOver()
+    }
+});
+
+function displayResults(result = "win") {
+    if (result == "win") {
+        resultMessage.textContent = `${GameManager.getActivePlayer().name} has won`;
+        resultDialog.showModal();
+    } else if (result == "draw") {
+        resultMessage.textContent = "It's a draw";
+        resultDialog.showModal();
+    } else {
+        throw Error(
+            "displayResult() should take in 'win' or 'draw' as paremeters. Win is the default parameter if not assigned"
+        );
+    }
+}

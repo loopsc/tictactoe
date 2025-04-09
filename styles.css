@@ -10,7 +10,7 @@ html {
 
 body {
     background-color: var(--background);
-    font-family: 'Courier New', Courier, monospace;
+    font-family: "Courier New", Courier, monospace;
 }
 
 :root {
@@ -27,12 +27,10 @@ body {
     align-items: center;
 }
 
-
 .board-div {
     display: grid;
     grid-template-columns: repeat(3, 200px);
     grid-template-rows: repeat(3, 200px);
-
 }
 
 .cell {
@@ -54,7 +52,7 @@ body {
 }
 
 .cell.left {
-    border-left:0
+    border-left: 0;
 }
 
 .cell.bottom {
@@ -72,7 +70,7 @@ body {
     padding: 3rem;
     top: 50%;
     left: 50%;
-    transform: translate(-50%,-50%);
+    transform: translate(-50%, -50%);
     background-color: var(--background);
 }
 
@@ -81,7 +79,7 @@ body {
     height: 100%;
     flex-direction: column;
     align-items: center;
-    justify-content: space-around; 
+    justify-content: space-around;
 }
 
 .gamemode-form,
