@@ -3,8 +3,6 @@ const resultMessage = document.querySelector(".game-result");
 const playAgainButton = document.querySelector(".play-again");
 const closeButton = document.querySelector(".close");
 
-let activeGameMode = "";
-
 const Gameboard = (function () {
     const rows = 3;
     const columns = 3;
@@ -64,24 +62,20 @@ const Gameboard = (function () {
 
         // If the cell is taken, reroll otherwise return
         while (gameboard[row][col].getToken() !== 0) {
-            console.log("Cell was taken, reroll!!!");
             randomRowCol = getRowColByIndex(Math.floor(Math.random() * 9));
             [row, col] = randomRowCol;
         }
-        console.log("Cell was not taken");
-        console.log("returning:", randomRowCol);
         return randomRowCol;
     };
 
     const resetBoard = () => {
-        let counter = 0
+        let counter = 0;
         for (let i = 0; i < 9; i++) {
             if (getCellByIndex(i).getToken() !== 0) {
                 getCellByIndex(i).assignCell(0);
                 counter++;
             }
         }
-        console.log("deleted elements", counter)
         updateBoard();
     };
 
@@ -111,6 +105,14 @@ const GameManager = (function () {
     // Variable holds the 2d array
     const board = Gameboard.getBoard();
     let gameOver = false;
+    let activeGameMode = "";
+
+    const playerOneName = document.querySelector("#player-one-name").value;
+    const playerTwoName = document.querySelector("#player-two-name").value;
+
+    if (playerOneName != "") {
+        players[0].name = playerOneName;
+    }
 
     // prettier-ignore
     const winningCombinations = [
@@ -149,7 +151,19 @@ const GameManager = (function () {
 
     const getGameOver = () => gameOver;
 
-    const resetGameOver = () => {gameOver = false};
+    const resetGameOver = () => {
+        gameOver = false;
+    };
+
+    const getActiveGameMode = () => activeGameMode;
+
+    const setActiveGameMode = (gamemode) => {
+        if (gamemode !== "player" && gamemode !== "computer") {
+            throw Error("gamemode must be 'player' or 'computer'");
+        } else {
+            activeGameMode = gamemode;
+        }
+    };
 
     // Return true if a player has a winning combination
     const checkWin = () => {
@@ -165,7 +179,7 @@ const GameManager = (function () {
         return board.every((row) => row.every((cell) => cell.getToken() !== 0));
     };
 
-    const displayResults = (result = "win")  => {
+    const displayResults = (result = "win") => {
         if (result == "win") {
             resultMessage.textContent = `${activePlayer.name} has won`;
             resultDialog.showModal();
@@ -177,7 +191,7 @@ const GameManager = (function () {
                 "displayResult() should take in 'win' or 'draw' as paremeters. Win is the default parameter if not assigned"
             );
         }
-    }
+    };
 
     const playRoundPlayer = (row, col) => {
         // Place a token
@@ -185,16 +199,16 @@ const GameManager = (function () {
 
         // Checks for a win
         if (checkWin()) {
-            displayResults()
-            activeGameMode = ""
+            displayResults();
+
             gameOver = true;
             return;
         }
 
         // Check for a draw
         if (checkBoardFull()) {
-            displayResults("draw")
-            activeGameMode = ""
+            displayResults("draw");
+
             gameOver = true;
             return;
         }
@@ -202,13 +216,11 @@ const GameManager = (function () {
         // Switch player and continue playing
         updateBoard();
         switchPlayer();
-        console.log(`${activePlayer.name}'s turn`);
     };
 
     const playRoundComputer = (row, col) => {
-
         if (activePlayer.token != 1) {
-            switchPlayer()
+            switchPlayer();
         }
 
         // Place a token
@@ -216,27 +228,22 @@ const GameManager = (function () {
 
         // Check for win
         if (checkWin()) {
-            displayResults()
-            activeGameMode = ""
+            displayResults();
+
             gameOver = true;
-            console.log("won against computer. returning")
-            console.log("activeGameMode", activeGameMode)
             return;
         }
 
         // Check for a draw
         if (checkBoardFull()) {
-            displayResults("draw")
-            activeGameMode = ""
+            displayResults("draw");
+
             gameOver = true;
-            console.log("draw against computer. returning")
-            console.log("activeGameMode", activeGameMode)
             return;
         }
         //Update the board
         updateBoard();
 
-        console.log("adding token");
         // Computer places token at random location
         Gameboard.addToken(Gameboard.generateRandomCell(), 2);
 
@@ -250,6 +257,8 @@ const GameManager = (function () {
         getGameOver,
         playRoundComputer,
         resetGameOver,
+        getActiveGameMode,
+        setActiveGameMode,
     };
 })();
 
@@ -258,21 +267,26 @@ const boardDiv = document.querySelector(".board-div");
 
 boardDiv.addEventListener("click", (e) => {
     const cellIndex = Array.from(cellsNodeList).indexOf(e.target);
-    const [row,col] = Gameboard.getRowColByIndex(cellIndex)
+    const [row, col] = Gameboard.getRowColByIndex(cellIndex);
 
-    if (activeGameMode === "player") {
-        if (!GameManager.getGameOver() && Gameboard.getBoard()[row][col].getToken() === 0) {
-            GameManager.playRoundPlayer(row,col);
-            updateBoard()
+    if (GameManager.getActiveGameMode() === "player") {
+        if (
+            !GameManager.getGameOver() &&
+            Gameboard.getBoard()[row][col].getToken() === 0
+        ) {
+            GameManager.playRoundPlayer(row, col);
+            updateBoard();
+        }
+    } else if (GameManager.getActiveGameMode() === "computer") {
+        if (
+            !GameManager.getGameOver() &&
+            Gameboard.getBoard()[row][col].getToken() === 0
+        ) {
+            GameManager.playRoundComputer(row, col);
+            updateBoard();
         }
     }
-    else if (activeGameMode === "computer") {
-        if (!GameManager.getGameOver() && Gameboard.getBoard()[row][col].getToken() === 0) {
-            GameManager.playRoundComputer(row,col);
-            updateBoard()
-        }
-    }
-})
+});
 
 // Writes token to UI
 function updateBoard() {
@@ -281,9 +295,8 @@ function updateBoard() {
             cell.textContent = "X";
         } else if (Gameboard.getCellByIndex(index).getToken() == 2) {
             cell.textContent = "O";
-        }
-        else if (Gameboard.getCellByIndex(index).getToken() == 0) {
-            cell.textContent = ""
+        } else if (Gameboard.getCellByIndex(index).getToken() == 0) {
+            cell.textContent = "";
         }
     });
 }
@@ -298,25 +311,18 @@ gameModeDialog.showModal();
 gameModeDialog.addEventListener("close", () => {
     const gameMode = gameModeDialog.returnValue;
 
-    console.log("gamemode", gameMode);
-
-    activeGameMode = gameMode
+    GameManager.setActiveGameMode(gameMode);
 });
 
 resultDialog.addEventListener("close", () => {
     const gameOverAction = resultDialog.returnValue;
 
-    console.log("gameOverAction", gameOverAction);
-
     if (gameOverAction == "play-again") {
-        Gameboard.resetBoard()
-        GameManager.resetGameOver()
+        Gameboard.resetBoard();
+        GameManager.resetGameOver();
         gameModeDialog.showModal();
     } else if (gameOverAction == "close") {
-        console.log("closed");
-        Gameboard.resetBoard()
-        GameManager.resetGameOver()
+        Gameboard.resetBoard();
+        GameManager.resetGameOver();
     }
 });
-
-

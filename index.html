@@ -10,37 +10,57 @@
 </head>
 
 <body>
-    <div class="container">
-        <dialog class="dialog-result">
-            <div class="gamemode-div">
-                <p class="header game-result"></p>
-                <form action="" class="result-form" method="dialog">
-                    <button class="form-button play-again" type="submit" value="play-again">Play Again</button>
-                    <button class="form-button close" type="submit" value="close">Close</button>
-                </form>
-            </div>
-        </dialog>
-        <dialog class="dialog-game-mode">
-            <div class="gamemode-div">
-                <p class="header">Choose Gamemode:</p>
-                <form class="gamemode-form" action="" method="dialog">
-                    <button class="form-button pvp" type="submit" value="player">Vs Player</button>
-                    <button class="form-button pve" type="submit" value="computer">Vs Computer</button>
-                </form>
-            </div>
-        </dialog>
 
-        <div class="board-div">
-            <div class="cell one top left"></div>
-            <div class="cell two top middle"></div>
-            <div class="cell three top right"></div>
-            <div class="cell four left middle"></div>
-            <div class="cell five middle"></div>
-            <div class="cell six right middle"></div>
-            <div class="cell seven bottom left"></div>
-            <div class="cell eight bottom middle"></div>
-            <div class="cell nine bottom right"></div>
+    <div class="container">
+        <div class="sidebar">
+            <div class="change-name-container">
+                <form class="name-change-form player-one" action="">
+                    <label class="name-change-text" for="player-one-name">Player One</label>
+                    <input class="name-change-input player-one" type="text" id="player-one-name" name="player-one-name">
+                    <button class="name-change-button player-one" type="submit">Change Name</button>
+                </form>
+            </div>
+            <div class="change-name-container">
+                <form class="name-change-form player-two" action="">
+                    <label class="name-change-text" for="player-two-name">Player Two</label>
+                    <input class="name-change-input player-two" type="text" id="player-two-name" name="player-two-name">
+                    <button class="name-change-button player-two" type="submit">Change Name</button>
+                </form>
+            </div>
         </div>
+        <div class="main-content">
+            <dialog class="dialog-result">
+                <div class="gamemode-div">
+                    <p class="header game-result"></p>
+                    <form action="" class="result-form" method="dialog">
+                        <button class="form-button play-again" type="submit" value="play-again">Play Again</button>
+                        <button class="form-button close" type="submit" value="close">Close</button>
+                    </form>
+                </div>
+            </dialog>
+            <dialog class="dialog-game-mode">
+                <div class="gamemode-div">
+                    <p class="header">Choose Gamemode:</p>
+                    <form class="gamemode-form" action="" method="dialog">
+                        <button class="form-button pvp" type="submit" value="player">Vs Player</button>
+                        <button class="form-button pve" type="submit" value="computer">Vs Computer</button>
+                    </form>
+                </div>
+            </dialog>
+
+            <div class="board-div">
+                <div class="cell one top left"></div>
+                <div class="cell two top middle"></div>
+                <div class="cell three top right"></div>
+                <div class="cell four left middle"></div>
+                <div class="cell five middle"></div>
+                <div class="cell six right middle"></div>
+                <div class="cell seven bottom left"></div>
+                <div class="cell eight bottom middle"></div>
+                <div class="cell nine bottom right"></div>
+            </div>
+        </div>
+
     </div>
 </body>
 
