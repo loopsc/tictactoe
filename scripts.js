@@ -165,7 +165,21 @@ const GameManager = (function () {
         return board.every((row) => row.every((cell) => cell.getToken() !== 0));
     };
 
-    const playRound = (row, col) => {
+    const displayResults = (result = "win")  => {
+        if (result == "win") {
+            resultMessage.textContent = `${activePlayer.name} has won`;
+            resultDialog.showModal();
+        } else if (result == "draw") {
+            resultMessage.textContent = "It's a draw";
+            resultDialog.showModal();
+        } else {
+            throw Error(
+                "displayResult() should take in 'win' or 'draw' as paremeters. Win is the default parameter if not assigned"
+            );
+        }
+    }
+
+    const playRoundPlayer = (row, col) => {
         // Place a token
         Gameboard.addToken([row, col], activePlayer.token);
 
@@ -192,6 +206,11 @@ const GameManager = (function () {
     };
 
     const playRoundComputer = (row, col) => {
+
+        if (activePlayer.token != 1) {
+            switchPlayer()
+        }
+
         // Place a token
         Gameboard.addToken([row, col], activePlayer.token);
 
@@ -226,7 +245,7 @@ const GameManager = (function () {
     };
 
     return {
-        playRound,
+        playRoundPlayer,
         getActivePlayer,
         getGameOver,
         playRoundComputer,
@@ -234,60 +253,30 @@ const GameManager = (function () {
     };
 })();
 
-const htmlBoard = document.querySelectorAll(".cell");
+const cellsNodeList = document.querySelectorAll(".cell");
+const boardDiv = document.querySelector(".board-div");
 
+boardDiv.addEventListener("click", (e) => {
+    const cellIndex = Array.from(cellsNodeList).indexOf(e.target);
+    const [row,col] = Gameboard.getRowColByIndex(cellIndex)
 
-function playGamePlayer() {
-    activeGameMode = "player"
-    console.log('playGamePlayer() called')
-    htmlBoard.forEach((cell, index) => {
-        cell.addEventListener("click", () => {
-            console.log("gameover?",GameManager.getGameOver())
-            // If game is over prevent player from clicking more squares
-            if (!GameManager.getGameOver()) {
-                const [row, col] = Gameboard.getRowColByIndex(index);
-                if (Gameboard.getBoard()[row][col].getToken() === 0) {
-                    GameManager.playRound(row, col);
-                    updateBoard();
-                } else {
-                    console.log("Can't click occupied cell");
-                }
-            }
-        });
-    });
-}
-
-function playGameComputer() {
-    activeGameMode = "computer"
-    console.log('playGameComputer() called')
-    htmlBoard.forEach((cell, index) => {
-        cell.addEventListener("click", function handleEvent(){
-            // If game is over prevent player from clicking more squares
-            if (!GameManager.getGameOver()) {
-                const [row, col] = Gameboard.getRowColByIndex(index);
-                console.log("playing computer");
-                if (Gameboard.getBoard()[row][col].getToken() === 0) {
-                    GameManager.playRoundComputer(row, col);
-                    updateBoard();
-                } else {
-                    console.log("Can't click occupied cell");
-                }
-            }
-            if (activeGameMode != "computer") {
-                this.removeEventListener("click", handleEvent)
-                console.log("closed event listener computer")
-            }
-        });
-    });
-}
-
-function removeAllListeners() {
-    cell.removeEventListener("click", func)
-}
+    if (activeGameMode === "player") {
+        if (!GameManager.getGameOver() && Gameboard.getBoard()[row][col].getToken() === 0) {
+            GameManager.playRoundPlayer(row,col);
+            updateBoard()
+        }
+    }
+    else if (activeGameMode === "computer") {
+        if (!GameManager.getGameOver() && Gameboard.getBoard()[row][col].getToken() === 0) {
+            GameManager.playRoundComputer(row,col);
+            updateBoard()
+        }
+    }
+})
 
 // Writes token to UI
 function updateBoard() {
-    htmlBoard.forEach((cell, index) => {
+    cellsNodeList.forEach((cell, index) => {
         if (Gameboard.getCellByIndex(index).getToken() == 1) {
             cell.textContent = "X";
         } else if (Gameboard.getCellByIndex(index).getToken() == 2) {
@@ -311,11 +300,7 @@ gameModeDialog.addEventListener("close", () => {
 
     console.log("gamemode", gameMode);
 
-    if (gameMode == "player") {
-        playGamePlayer();
-    } else if (gameMode == "computer") {
-        playGameComputer();
-    }
+    activeGameMode = gameMode
 });
 
 resultDialog.addEventListener("close", () => {
@@ -334,16 +319,4 @@ resultDialog.addEventListener("close", () => {
     }
 });
 
-function displayResults(result = "win") {
-    if (result == "win") {
-        resultMessage.textContent = `${GameManager.getActivePlayer().name} has won`;
-        resultDialog.showModal();
-    } else if (result == "draw") {
-        resultMessage.textContent = "It's a draw";
-        resultDialog.showModal();
-    } else {
-        throw Error(
-            "displayResult() should take in 'win' or 'draw' as paremeters. Win is the default parameter if not assigned"
-        );
-    }
-}
+
