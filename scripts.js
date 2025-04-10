@@ -107,13 +107,6 @@ const GameManager = (function () {
     let gameOver = false;
     let activeGameMode = "";
 
-    const playerOneName = document.querySelector("#player-one-name").value;
-    const playerTwoName = document.querySelector("#player-two-name").value;
-
-    if (playerOneName != "") {
-        players[0].name = playerOneName;
-    }
-
     // prettier-ignore
     const winningCombinations = [
         [[0, 0], [0, 1], [0, 2]],
@@ -137,6 +130,23 @@ const GameManager = (function () {
             token: 2,
         },
     ];
+
+    const setPlayerName = (player, inputName) => {
+        console.log("Value of name passed in to set to:", inputName);
+        if (!inputName) {
+            alert("Name cannot be empty");
+        }
+
+        if (player !== "playerOne" && player !== "playerTwo") {
+            console.error(
+                "Pass in correct player variable: playerOne or playerTwo"
+            );
+        }
+
+        player === "playerOne"
+            ? (players[0].name = inputName)
+            : (players[1].name = inputName);
+    };
 
     // Set the active player
     let activePlayer = players[0];
@@ -259,6 +269,7 @@ const GameManager = (function () {
         resetGameOver,
         getActiveGameMode,
         setActiveGameMode,
+        setPlayerName,
     };
 })();
 
@@ -305,6 +316,12 @@ const gameModeDialog = document.querySelector(".dialog-game-mode");
 const gameModeForm = document.querySelector(".gamemode-form");
 const pvp = document.querySelector(".pvp");
 const pve = document.querySelector(".pve");
+const pOneNameChangeButton = document.querySelector(
+    ".name-change-button.player-one"
+);
+const pTwoNameChangeButton = document.querySelector(
+    ".name-change-button.player-two"
+);
 
 gameModeDialog.showModal();
 
@@ -325,4 +342,24 @@ resultDialog.addEventListener("close", () => {
         Gameboard.resetBoard();
         GameManager.resetGameOver();
     }
+});
+
+pOneNameChangeButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    const pOneNameInput = document.querySelector("#player-one-name");
+
+    // Call method to change player name from game manager
+    GameManager.setPlayerName("playerOne", pOneNameInput.value);
+
+    pOneNameInput.value = "";
+});
+
+pTwoNameChangeButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    const pTwoNameInput = document.querySelector("#player-two-name");
+
+    // Call method to change player name from game manager
+    GameManager.setPlayerName("playerTwo", pTwoNameInput.value);
+
+    pTwoNameInput.value = "";
 });
